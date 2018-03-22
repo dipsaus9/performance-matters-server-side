@@ -3,7 +3,9 @@ var bodyParser = require('body-parser');
 var request = require('request');
 var app = express();
 let googleHost = 'https://maps.googleapis.com/maps/api/geocode/json?address=';
-let apiKeyGoogle = '&key=AIzaSyCHRzuIAtoPNHLj5MyY_KFn0Ls8mBlUyPg';
+
+let apiKeyGoogle = '';
+
 var metroData = require('./routePlanner/metro.js');
 let routePlanner = require('./routePlanner/app.js');
 
@@ -14,7 +16,6 @@ app.set('view engine', 'ejs');;
 app.set('views', 'views');
 
 app.get('/', function (req, res) {
-  console.log(metroData);
   metroData.init();
   res.render('index.ejs', {start: ''});
 });

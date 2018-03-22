@@ -169,6 +169,7 @@ main.searched .marker {
     right: -30vw; }
 
 .planner, .eindResult {
+  min-width: 680px;
   position: relative;
   margin: 0 auto;
   width: 35vw;
@@ -180,6 +181,10 @@ main.searched .marker {
   overflow-x: hidden;
   background-color: #f6f6f6;
   transition: .6s ease-in-out; }
+  @media (max-width: 680px) {
+    .planner, .eindResult {
+      width: 100vw;
+      min-width: 100%; } }
   .planner h1, .eindResult h1 {
     font-size: 1.5rem;
     font-weight: 700;

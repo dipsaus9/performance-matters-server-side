@@ -26,7 +26,8 @@ main.searched{
 .planner{ right: 0;
   &.active{ right: -30vw; }
 }
-.planner, .eindResult{ position: relative; margin: 0 auto; width: 35vw; height: 100vh; display: flex; flex-direction: column; padding: 30px; overflow: scroll; overflow-x: hidden; background-color: $light-grey; transition: .6s ease-in-out;
+.planner, .eindResult{ min-width: 680px; position: relative; margin: 0 auto; width: 35vw; height: 100vh; display: flex; flex-direction: column; padding: 30px; overflow: scroll; overflow-x: hidden; background-color: $light-grey; transition: .6s ease-in-out;
+  @media (max-width: 680px){ width: 100vw; min-width: 100%; }
   h1{ font-size: rem(24); font-weight: $font-bold; letter-spacing: .5px; line-height: 1.5; color: #343434;}
   span, p{ padding: 0; font-weight: $font-book; font-size: rem(18); color: #343434; }
   h3{ font-size: rem(20); font-weight: $font-bold; letter-spacing: .5px; color: #323232; }
