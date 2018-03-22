@@ -30,7 +30,7 @@ app.get('/', function (req, res) {
   metroData.init();
   res.render('index.ejs', {movies: 'hallo'});
 });
-app.post('/', function(req, res){
+app.post('/result', function(req, res){
   let inputData = (req.body);
   if(inputData.startAdress != '' && inputData.endAdress != ''){
     let firstAdress = inputData.startAdress.split(' ').join('+') + ', Nederland';
@@ -40,7 +40,8 @@ app.post('/', function(req, res){
     Promise.all([firstAdressOutcome, endAdressOutcome]).then(function(data) {
       firstAdressResult = (JSON.parse(data[0])).results[0].geometry;
       secondAdressResult = (JSON.parse(data[1])).results[0].geometry;
-      console.log(firstAdressResult, secondAdressResult, metroData.metroStations);
+      let test = routePlanner.init(firstAdressResult, secondAdressResult);
+      res.render('detail.ejs', {route: test});
     });
   }
 });
@@ -55,6 +56,8 @@ var server = app.listen(1337, function () {
    console.log('server is running on port 1337')
 });
 
+
+//dipsuas epicness
 function getData(url){
   return new Promise(function(resolve, reject) {
     request((googleHost + url + apiKeyGoogle), function (error, response, body) {
@@ -62,506 +65,6 @@ function getData(url){
       resolve(body);
     });
   });
-}
-
-const routePlanner = {
-  init: function(startLocation, endLocation){
-    const startLocationGeo = googleLocation.getData(startLocation);
-    const endLocationGeo = googleLocation.getData(endLocation);
-    var self = this;
-    Promise.all([startLocationGeo, endLocationGeo]).then(function(data){
-      const subwayStations = metroData.metroStations;
-      let firstSubway = [];
-      let secondSubway = [];
-      subwayStations.forEach(function(el){
-        let curr = self.distanceTwoPoints(el, data[0].results[0].geometry.location.lat, data[0].results[0].geometry.location.lng, el.location.geometry.coordinates[1], el.location.geometry.coordinates[0]);
-        firstSubway.push(curr);
-      });
-      subwayStations.forEach(function(el){
-        let curr = self.distanceTwoPoints(el, data[1].results[0].geometry.location.lat, data[1].results[0].geometry.location.lng, el.location.geometry.coordinates[1], el.location.geometry.coordinates[0]);
-        secondSubway.push(curr);
-      });
-      firstSubway = self.getLowestNumber(firstSubway);
-      secondSubway = self.getLowestNumber(secondSubway);
-      self.findRoute(firstSubway, secondSubway);
-    });
-  },
-  getLowestNumber: function(object){
-    var lowestNr = Number.POSITIVE_INFINITY;
-    var lowestOb = [];
-    object.forEach(function(item){
-      if(lowestNr > item.distance){
-        lowestOb = [];
-        lowestOb.push(item);
-        lowestNr = item.distance;
-      }
-    });
-    return lowestOb[0];
-  },
-  degreesToRadians: function(degree){
-    return degree * Math.PI / 180;
-  },
-  distanceTwoPoints(object, lat1, lon1, lat2, lon2){
-    var self = routePlanner;
-    let earthRadiusKm = 6371;
-    let dLat = self.degreesToRadians(lat2-lat1);
-    let dLon = self.degreesToRadians(lon2-lon1);
-    lat1 = self.degreesToRadians(lat1);
-    lat2 = self.degreesToRadians(lat2);
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return {
-      distance: (earthRadiusKm * c),
-      object: object
-    };
-  },
-  beginStationName: '',
-  endStationName: '',
-  findRoute: function(firstStation, secondStation){
-    var self = routePlanner;
-    self.beginStationName = firstStation.object.metroHalte;
-    self.endStationName = secondStation.object.metroHalte;
-    let directRouteVar = false;
-    if(self.beginStationName == self.endStationName){
-      //begin is same as end, find something funny here
-      alert('ga lopen');
-    }
-    else{
-      //start planning
-      let firstStationLines = firstStation.object.metroLijnen;
-      let secondStationLines = secondStation.object.metroLijnen;
-      //check if it is a directRoute
-      let firstStationStop = [];
-      let endStations = [];
-      let endStationStop = [];
-      firstStationLines.forEach(function(el){
-        let firstLine = el;
-        secondStationLines.forEach(function(line){
-          if(firstLine == line){
-            // there is a direct line start a new function here
-            var activeMetroLine = metroData.metroLines[firstLine];
-            directRouteVar = true;
-            endStations.push(self.directRoutePlanning(activeMetroLine, firstLine, firstStation.object.metroHalte, secondStation.object.metroHalte));
-          }
-        });
-      });
-      let tussenStop = [];
-      let tussenLines = [];
-      if(!directRouteVar){
-        firstStationLines.forEach(function(el){
-          let firstLine = el;
-          let activeMetroLine = metroData.metroLines[firstLine];
-          activeMetroLine.forEach(function(item){
-            let thisLine = item.metroLijnen;
-            thisLine.forEach(function(line){
-              let currLine = line;
-              secondStationLines.forEach(function(endLine){
-                if(endLine === currLine){
-                  if(!tussenLines.includes(endLine)){
-                    tussenLines.push(endLine);
-                  }
-                  tussenStop.push(item);
-                }
-              });
-            });
-          });
-        });
-        firstStationLines.forEach(function(fLine){
-          let beginLine = fLine;
-          tussenStop.forEach(function(sLine){
-            let tLine = sLine.metroLijnen;
-            let sLineCurr = sLine;
-            tLine.forEach(function(line){
-              if(line === beginLine){
-                firstStationStop.push(self.directRoutePlanning(metroData.metroLines[beginLine], beginLine, firstStation.object.metroHalte, sLineCurr.metroHalte));
-              }
-            });
-          });
-        });
-        secondStationLines.forEach(function(fLine){
-          let beginLine = fLine;
-          tussenStop.forEach(function(sLine){
-            let tLine = sLine.metroLijnen;
-            let sLineCurr = sLine;
-            tLine.forEach(function(line){
-              if(line === beginLine){
-                endStationStop.push(self.directRoutePlanning(metroData.metroLines[beginLine], beginLine, sLineCurr.metroHalte, secondStation.object.metroHalte));
-              }
-            });
-          });
-        });
-      }
-      let newEndstation = [];
-      let withStopStations = [];
-      if(!directRouteVar){
-        endStationStop.forEach(function(item){
-          let station = item.obj[0];
-          firstStationStop.forEach(function(el){
-            if((el.obj[el.obj.length - 1]) == station){
-              let currData = {
-                begin: el,
-                end: item,
-                stops: (el.obj.length + item.obj.length)
-              };
-              withStopStations.push(currData);
-            }
-          });
-        });
-        let length = 10000;
-        withStopStations.forEach(function(item){
-          if(item.stops < length){
-            newEndstation = [];
-            length = item.stops;
-            newEndstation.push(item);
-          }
-        });
-      }
-      else{
-        if(endStations.length > 0){
-          let length = 1000;
-          for(let i = 0; i < endStations.length; i++){
-            if(endStations[i].obj.length < length){
-              newEndstation = [];
-              length = endStations[i].obj.length;
-              newEndstation.push(endStations[i]);
-            }
-          }
-        }
-      }
-      self.placeRoute(newEndstation, directRouteVar);
-    }
-  },
-  directRoutePlanning: function(line, lineNr, beginStation, endStation){
-    let activeMetroLine = line;
-    let stationsPassing = [];
-    let beginStationNameCurr = beginStation;
-    let endStationNameCurr = endStation;
-    let indexAfter = Number.POSITIVE_INFINITY;
-    for(let i = 0; i < activeMetroLine.length; i++){
-      if(activeMetroLine[i].metroHalte == beginStationNameCurr){
-        indexAfter = i;
-      }
-      if(i >= indexAfter){
-        stationsPassing.push(activeMetroLine[i]);
-        if(activeMetroLine[i].metroHalte == endStationNameCurr){
-          break;
-        }
-      }
-    }
-    let firstWay = false;
-    stationsPassing.forEach(function(station){
-      if(station.metroHalte == endStationNameCurr){
-        firstWay = true;
-      }
-    });
-    if(!firstWay){
-      stationsPassing = [];
-      indexAfter = Number.NEGATIVE_INFINITY;
-      for(let i = activeMetroLine.length; i > 0; i--){
-        if(activeMetroLine[i - 1].metroHalte == beginStationNameCurr){
-          indexAfter = i;
-        }
-        if(i <= indexAfter){
-          stationsPassing.push(activeMetroLine[i - 1]);
-          if(activeMetroLine[i - 1].metroHalte == endStationNameCurr){
-            break;
-          }
-        }
-      }
-    }
-    let directRouteObj = {
-      line: lineNr,
-      obj: stationsPassing
-    };
-    return directRouteObj;
-  },
-  placeRoute: function (data, direct){
-    let el1 = document.querySelector('.planner');
-    el1.classList.add('active');
-    let legendaFirst = document.querySelector('.legenda');
-    legendaFirst.classList.add('inactive');
-    let legendaSecond = document.querySelector('.legendaActive');
-    legendaSecond.classList.remove('inactive');
-
-    let el2 = document.querySelector('.eindResults');
-    el2.classList.add('active');
-    let newData = [];
-    if(direct){
-      let arr = data[0].obj;
-      let newArr = [];
-      for(let i = 1; i < (arr.length - 1); i++){
-        newArr.push(arr[i].metroHalte);
-      }
-      let obj = {
-        fromTo: [data[0].obj[0], data[0].obj[data[0].obj.length - 1]],
-        line: data[0].line,
-        firstLi: data[0].obj[0].metroHalte,
-        lastLi: data[0].obj[data[0].obj.length - 1].metroHalte,
-        betweenStops: newArr,
-      };
-      newData.push(obj);
-    }
-    else{
-      let arr1 = data[0].begin.obj;
-      let newArr1 = [];
-      for(let i = 1; i < (arr1.length - 1); i++){
-        newArr1.push(arr1[i].metroHalte);
-      }
-      let objBegin = {
-        fromTo: [data[0].begin.obj[0], data[0].begin.obj[data[0].begin.obj.length - 1]],
-        line: data[0].begin.line,
-        firstLi: data[0].begin.obj[0].metroHalte,
-        lastLi: data[0].begin.obj[data[0].begin.obj.length - 1].metroHalte,
-        betweenStops: newArr1,
-      };
-      newData.push(objBegin);
-      let arr2 = data[0].end.obj;
-      let newArr2 = [];
-      for(let i = 1; i < (arr2.length - 1); i++){
-        newArr2.push(arr2[i].metroHalte);
-      }
-      let objEnd = {
-        fromTo: [data[0].end.obj[0], data[0].end.obj[data[0].end.obj.length - 1]],
-        line: data[0].end.line,
-        firstLi: data[0].end.obj[0].metroHalte,
-        lastLi: data[0].end.obj[data[0].end.obj.length - 1].metroHalte,
-        betweenStops: newArr2,
-      };
-      newData.push(objEnd);
-    }
-    let geoLoc;
-    let geoLocEnd;
-    let geoLocBetween = [];
-    if(direct){
-      geoLoc = data[0].obj[0].location.geometry.coordinates;
-      geoLocEnd = data[0].obj[data[0].obj.length - 1].location.geometry.coordinates;
-      for(let o = 1; o < data[0].obj.length - 1; o++){
-        geoLocBetween.push(data[0].obj[o].location.geometry);
-      }
-    }
-    else{
-      geoLoc = data[0].begin.obj[0].location.geometry.coordinates;
-      geoLocEnd = data[0].end.obj[data[0].end.obj.length - 1].location.geometry.coordinates;
-      for(let o = 1; o < data[0].begin.obj.length - 1; o++){
-        geoLocBetween.push(data[0].begin.obj[o].location.geometry);
-      }
-      for(let i = 1; i < data[0].end.obj.length - 1; i++){
-        geoLocBetween.push(data[0].end.obj[i].location.geometry);
-      }
-      let geoLocBetweenStop = data[0].end.obj[0].location.geometry.coordinates;
-      var elBetweenStop = document.createElement('div');
-      elBetweenStop.className = 'marker overstopPoint';
-      new mapboxgl.Marker(elBetweenStop)
-        .setLngLat(geoLocBetweenStop)
-        .addTo(mapObj.map);
-    }
-    for (let i = 0; i < geoLocBetween.length; i++){
-      var elBetween = document.createElement('div');
-      elBetween.className = 'marker tussen';
-      new mapboxgl.Marker(elBetween)
-        .setLngLat(geoLocBetween[i].coordinates)
-        .addTo(mapObj.map);
-
-    }
-    mapObj.map.flyTo({
-      center: geoLoc
-    });
-    let main = document.querySelector('main');
-    main.classList.add('searched');
-    let mapFocus = document.querySelector('.mapboxgl-canvas');
-    mapFocus.focus();
-    var el = document.createElement('div');
-    el.className = 'marker startpoint';
-    new mapboxgl.Marker(el)
-      .setLngLat(geoLoc)
-      .addTo(mapObj.map);
-
-    var elEnd = document.createElement('div');
-    elEnd.className = 'marker endPoint';
-    new mapboxgl.Marker(elEnd)
-      .setLngLat(geoLocEnd)
-      .addTo(mapObj.map);
-
-    routePlanner.templateRender(newData);
-  },
-  templateRender: function(data){
-    let element = document.querySelector('.eindResults');
-    element.innerHTML = '';
-    let direct = true;
-    if(data.length > 1){
-      direct = false;
-    }
-    //create top div
-    let elementPlacedOn = document.createElement('div');
-
-    //create title
-    let titleAbove = document.createElement('h1');
-    let titleAboveText = document.createTextNode('Routeplanner metro Amsterdam');
-    titleAbove.appendChild(titleAboveText);
-
-    //from to (place title route on end)
-    let tilteRoute = document.createElement('h3');
-    let titleRouteText = document.createTextNode('Route van: ');
-    tilteRoute.appendChild(titleRouteText);
-
-    let spanTitle = document.createElement('span');
-    spanTitle.className = 'start_adress';
-    let spanTitleText;
-    if(direct){
-      spanTitleText = document.createTextNode(data[0].fromTo[0].metroHalte);
-    }else{
-      spanTitleText = document.createTextNode(data[0].fromTo[0].metroHalte);
-    }
-    spanTitle.appendChild(spanTitleText);
-
-    tilteRoute.appendChild(spanTitle);
-    let spanTitleEnd = document.createElement('span');
-    spanTitleEnd.className = 'end_adres';
-    let tussenText = document.createTextNode(' naar ');
-    tilteRoute.appendChild(tussenText);
-
-    let spanTitleEndText;
-    if(direct){
-      spanTitleEndText = document.createTextNode(data[0].fromTo[1].metroHalte);
-    }
-    else{
-      spanTitleEndText = document.createTextNode(data[1].fromTo[1].metroHalte);
-    }
-    spanTitleEnd.appendChild(spanTitleEndText);
-    tilteRoute.appendChild(spanTitleEnd);
-
-
-    let link = document.createElement('a');
-    link.className = 'result_container';
-    let linkText = document.createTextNode('Toon tussenstops');
-    link.href = '#';
-    link.onclick = function(e){
-      e.preventDefault();
-      let menuOpen = document.querySelectorAll('.stops_between');
-      menuOpen.forEach(function(el){
-        if(el.classList.contains('inactive')){
-          el.classList.remove('inactive');
-        }else{
-          el.classList.add('inactive');
-        }
-      });
-    };
-    link.appendChild(linkText);
-
-
-    let singleResult;
-    elementPlacedOn.appendChild(titleAbove);
-    elementPlacedOn.appendChild(tilteRoute);
-    if(direct){
-      //for loop difference
-      singleResult = document.createElement('div');
-      singleResult.className = 'singleResult';
-      let result_container = document.createElement('div');
-      result_container.className = 'result_container';
-      let title = document.createElement('h4');
-      let titleText = document.createTextNode('Metro ');
-
-      //wich line is it
-      let titleLine = document.createElement('span');
-      let titleLineText = document.createTextNode(data[0].line);
-      title.appendChild(titleText);
-      titleLine.appendChild(titleLineText);
-      title.appendChild(titleLine);
-
-      let uList = document.createElement('ul');
-      uList.className = 'stops';
-
-      let firstLi = document.createElement('li');
-      let firstLiText = document.createTextNode(data[0].firstLi);
-      firstLi.append(firstLiText);
-
-      let stopsBetween = document.createElement('div');
-      stopsBetween.className = 'stops_between inactive';
-      let stopsBetweenUl = document.createElement('ul');
-      stopsBetweenUl.className = 'stops';
-      stopsBetween.appendChild(stopsBetweenUl);
-
-      for(let i = 0; i < (data[0].betweenStops.length); i++){
-        let li = document.createElement('li');
-        let text = document.createTextNode(data[0].betweenStops[i]);
-        li.appendChild(text);
-        stopsBetweenUl.appendChild(li);
-      }
-      stopsBetween.appendChild(stopsBetweenUl);
-      uList.appendChild(stopsBetween);
-
-      let lastLi = document.createElement('li');
-      let lastLiText = document.createTextNode(data[0].lastLi);
-      lastLi.appendChild(lastLiText);
-
-      uList.appendChild(firstLi);
-      stopsBetween.appendChild(stopsBetweenUl);
-      uList.appendChild(stopsBetween);
-      uList.appendChild(lastLi);
-      result_container.appendChild(title);
-      result_container.appendChild(uList);
-      singleResult.appendChild(result_container);
-
-      elementPlacedOn.appendChild(singleResult);
-
-    }
-    else{
-      for(let k = 0; k < 2; k++){
-        singleResult = document.createElement('div');
-        singleResult.className = 'singleResult';
-        let result_container = document.createElement('div');
-        result_container.className = 'result_container';
-        let title = document.createElement('h4');
-        let titleText = document.createTextNode('Metro ');
-
-        //wich line is it
-        let titleLine = document.createElement('span');
-        let titleLineText = document.createTextNode(data[k].line);
-        title.appendChild(titleText);
-        titleLine.appendChild(titleLineText);
-        title.appendChild(titleLine);
-
-        let uList = document.createElement('ul');
-        uList.className = 'stops';
-
-        let firstLi = document.createElement('li');
-        let firstLiText = document.createTextNode(data[k].firstLi);
-        firstLi.append(firstLiText);
-
-        let stopsBetween = document.createElement('div');
-        stopsBetween.className = 'stops_between inactive';
-        let stopsBetweenUl = document.createElement('ul');
-        stopsBetweenUl.className = 'stops';
-        stopsBetween.appendChild(stopsBetweenUl);
-
-        for(let i = 0; i < (data[k].betweenStops.length); i++){
-          let li = document.createElement('li');
-          let text = document.createTextNode(data[k].betweenStops[i]);
-          li.appendChild(text);
-          stopsBetweenUl.appendChild(li);
-        }
-        stopsBetween.appendChild(stopsBetweenUl);
-        uList.appendChild(stopsBetween);
-
-        let lastLi = document.createElement('li');
-        let lastLiText = document.createTextNode(data[k].lastLi);
-        lastLi.appendChild(lastLiText);
-
-        uList.appendChild(firstLi);
-        stopsBetween.appendChild(stopsBetweenUl);
-        uList.appendChild(stopsBetween);
-        uList.appendChild(lastLi);
-        result_container.appendChild(title);
-        result_container.appendChild(uList);
-        singleResult.appendChild(result_container);
-
-        elementPlacedOn.appendChild(singleResult);
-      }
-    }
-    elementPlacedOn.appendChild(link);
-    element.appendChild(elementPlacedOn);
-  }
 }
 const metroData = {
   init: function(){
@@ -576,16 +79,10 @@ const metroData = {
   mapData: {
     init: function(data) {
       const self = metroData.mapData;
-      //get mapdata and map the data
       const allMetroStations = self.groupData(self.createGEOJSON(data));
       const allLines = self.createLineObject(allMetroStations);
-      //set data into variable and push data on to the map after this
       metroData.metroLines = allLines;
       metroData.metroStations = allMetroStations;
-      // const newGeoJson = geoJson.features.filter(function(e){
-      //   const valuesArr = ['Metrolijn 54', 'Metrolijn 53', 'Noord/Zuidlijn', 'metro/sneltramlijn 51', 'Metrolijn 50'];
-      //   return valuesArr.includes(e.properties.linelabel);
-      // });
     },
     createGEOJSON: function(data){
       let newData = data.results.bindings.map(function(el){
@@ -666,11 +163,11 @@ const metroData = {
       const lijn53 = self.orderLines(self.filterOnLine(data, 53), 53);
       const lijn54 = self.orderLines(self.filterOnLine(data, 54), 54);
       const allLines = {
-        51: lijn51,
-        52: lijn52,
-        53: lijn53,
-        50: lijn50,
-        54: lijn54
+        line51: lijn51,
+        line52: lijn52,
+        line53: lijn53,
+        line50: lijn50,
+        line54: lijn54
       };
       return allLines;
     },
@@ -711,7 +208,7 @@ const metroData = {
           let arrayTest = [];
           let firstStationPoints = newArray[newArray.length - 1].location.geometry.coordinates;
           for(let i = 0; i < currentData.length; i++){
-            let distanceNr = routePlanner.distanceTwoPoints(currentData[i], firstStationPoints[1], firstStationPoints[0], currentData[i].location.geometry.coordinates[1] , currentData[i].location.geometry.coordinates[0]);
+            let distanceNr = calculationHelper.distanceTwoPoints(currentData[i], firstStationPoints[1], firstStationPoints[0], currentData[i].location.geometry.coordinates[1] , currentData[i].location.geometry.coordinates[0]);
             let obj = {
               index: i,
               object: currentData[i],
@@ -719,7 +216,7 @@ const metroData = {
             };
             arrayTest.push(obj);
           }
-          let lowestDistance = routePlanner.getLowestNumber(arrayTest);
+          let lowestDistance = calculationHelper.getLowestNumber(arrayTest);
           lowestDistance = lowestDistance.object.metroHalte;
           let lowestDistanceNr;
           for(let i = 0; i < currentData.length; i++){
@@ -744,3 +241,266 @@ const metroData = {
   metroLines: [],
   metroStations: [],
 };
+const calculationHelper = {
+  getLowestNumber: function(object){
+    var lowestNr = Number.POSITIVE_INFINITY;
+    var lowestOb = [];
+    object.forEach(function(item){
+      if(lowestNr > item.distance){
+        lowestOb = [];
+        lowestOb.push(item);
+        lowestNr = item.distance;
+      }
+    });
+    return lowestOb[0];
+  },
+  distanceTwoPoints: function(object, lat1, lon1, lat2, lon2){
+    let earthRadiusKm = 6371;
+    let dLat = this.degreesToRadians(lat2-lat1);
+    let dLon = this.degreesToRadians(lon2-lon1);
+    lat1 = this.degreesToRadians(lat1);
+    lat2 = this.degreesToRadians(lat2);
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return {
+      distance: (earthRadiusKm * c),
+      object: object
+    };
+  },
+  degreesToRadians: function(degree){
+    return degree * Math.PI / 180;
+  }
+}
+const routePlanner = {
+  init: function(startLocation, endLocation){
+    const startLocationGeo = startLocation;
+    const endLocationGeo = endLocation;
+    var self = this;
+    const subwayStations = metroData.metroStations;
+    let firstSubway = [];
+    let secondSubway = [];
+    subwayStations.forEach(function(el){
+      let curr = calculationHelper.distanceTwoPoints(el, startLocation.location.lat, startLocation.location.lng, el.location.geometry.coordinates[1], el.location.geometry.coordinates[0]);
+      firstSubway.push(curr);
+    });
+    subwayStations.forEach(function(el){
+      let curr = calculationHelper.distanceTwoPoints(el, endLocation.location.lat, endLocation.location.lng, el.location.geometry.coordinates[1], el.location.geometry.coordinates[0]);
+      secondSubway.push(curr);
+    });
+    firstSubway = calculationHelper.getLowestNumber(firstSubway);
+    secondSubway = calculationHelper.getLowestNumber(secondSubway);
+    let result = this.findRoute(firstSubway, secondSubway);
+    return result;
+  },
+  findRoute: function(firstStation, secondStation){
+    var self = routePlanner;
+    self.beginStationName = firstStation.object.metroHalte;
+    self.endStationName = secondStation.object.metroHalte;
+    let directRouteVar = false;
+    if(self.beginStationName == self.endStationName){
+      //begin is same as end, find something funny here
+    }
+    else{
+      //start planning
+      let firstStationLines = firstStation.object.metroLijnen;
+      let secondStationLines = secondStation.object.metroLijnen;
+      //check if it is a directRoute
+      let firstStationStop = [];
+      let endStations = [];
+      let endStationStop = [];
+      firstStationLines.forEach(function(el){
+        let firstLine = el;
+        secondStationLines.forEach(function(line){
+          if(firstLine == line){
+            var lineConvert = 'line' + line;
+            var activeMetroLine = metroData.metroLines[lineConvert];
+            directRouteVar = true;
+            endStations.push(self.routeBetweenTwoPoints(activeMetroLine, firstLine, firstStation.object.metroHalte, secondStation.object.metroHalte));
+          }
+        });
+      });
+      if(!directRouteVar){
+        let tussenStop = [];
+        let tussenLines = [];
+        firstStationLines.forEach(function(el){
+          let firstLine = el;
+          let testLine = 'line' + firstLine;
+          let activeMetroLine = metroData.metroLines[testLine];
+          activeMetroLine.forEach(function(item){
+            let thisLine = item.metroLijnen;
+            thisLine.forEach(function(line){
+              let currLine = line;
+              secondStationLines.forEach(function(endLine){
+                if(endLine === currLine){
+                  if(!tussenLines.includes(endLine)){
+                    tussenLines.push(endLine);
+                  }
+                  tussenStop.push(item);
+                }
+              });
+            });
+          });
+        });
+        firstStationLines.forEach(function(fLine){
+          let beginLine = fLine;
+          tussenStop.forEach(function(sLine){
+            let tLine = sLine.metroLijnen;
+            let sLineCurr = sLine;
+            tLine.forEach(function(line){
+              if(line === beginLine){
+                var lineConvert = 'line' + line;
+                firstStationStop.push(self.routeBetweenTwoPoints(metroData.metroLines[lineConvert], beginLine, firstStation.object.metroHalte, sLineCurr.metroHalte));
+              }
+            });
+          });
+        });
+        secondStationLines.forEach(function(fLine){
+          let beginLine = fLine;
+          tussenStop.forEach(function(sLine){
+            let tLine = sLine.metroLijnen;
+            let sLineCurr = sLine;
+            tLine.forEach(function(line){
+              if(line === beginLine){
+                var lineConvert = 'line' + line;
+                endStationStop.push(self.routeBetweenTwoPoints(metroData.metroLines[lineConvert], beginLine, sLineCurr.metroHalte, secondStation.object.metroHalte));
+              }
+            });
+          });
+        });
+      }
+      let newEndstation = [];
+      let withStopStations = [];
+      if(!directRouteVar){
+        endStationStop.forEach(function(item){
+          let station = item.obj[0];
+          firstStationStop.forEach(function(el){
+            if((el.obj[el.obj.length - 1]) == station){
+              let currData = {
+                begin: el,
+                end: item,
+                stops: (el.obj.length + item.obj.length)
+              };
+              withStopStations.push(currData);
+            }
+          });
+        });
+        let length = 10000;
+        withStopStations.forEach(function(item){
+          if(item.stops < length){
+            newEndstation = [];
+            length = item.stops;
+            newEndstation.push(item);
+          }
+        });
+      }
+      else{
+        if(endStations.length > 0){
+          let length = 1000;
+          for(let i = 0; i < endStations.length; i++){
+            if(endStations[i].obj.length < length){
+              newEndstation = [];
+              length = endStations[i].obj.length;
+              newEndstation.push(endStations[i]);
+            }
+          }
+        }
+      }
+      // self.placeRoute(newEndstation, directRouteVar);
+      let newData = [];
+      if(directRouteVar){
+        let data = newEndstation;
+        let arr = data[0].obj;
+        let newArr = [];
+        for(let i = 1; i < (arr.length - 1); i++){
+          newArr.push(arr[i].metroHalte);
+        }
+        let obj = {
+          fromTo: [data[0].obj[0], data[0].obj[data[0].obj.length - 1]],
+          line: data[0].line,
+          firstLi: data[0].obj[0].metroHalte,
+          lastLi: data[0].obj[data[0].obj.length - 1].metroHalte,
+          betweenStops: newArr,
+        };
+        newData.push(obj);
+      }
+      else{
+        let data = newEndstation;
+        let arr1 = data[0].begin.obj;
+        let newArr1 = [];
+        for(let i = 1; i < (arr1.length - 1); i++){
+          newArr1.push(arr1[i].metroHalte);
+        }
+        let objBegin = {
+          fromTo: [data[0].begin.obj[0], data[0].begin.obj[data[0].begin.obj.length - 1]],
+          line: data[0].begin.line,
+          firstLi: data[0].begin.obj[0].metroHalte,
+          lastLi: data[0].begin.obj[data[0].begin.obj.length - 1].metroHalte,
+          betweenStops: newArr1,
+        };
+        newData.push(objBegin);
+        let arr2 = data[0].end.obj;
+        let newArr2 = [];
+        for(let i = 1; i < (arr2.length - 1); i++){
+          newArr2.push(arr2[i].metroHalte);
+        }
+        let objEnd = {
+          fromTo: [data[0].end.obj[0], data[0].end.obj[data[0].end.obj.length - 1]],
+          line: data[0].end.line,
+          firstLi: data[0].end.obj[0].metroHalte,
+          lastLi: data[0].end.obj[data[0].end.obj.length - 1].metroHalte,
+          betweenStops: newArr2,
+        };
+        newData.push(objEnd);
+      }
+      return newData;
+    }
+  },
+  routeBetweenTwoPoints: function(line, lineNr, beginStation, endStation){
+    let activeMetroLine = line;
+    let stationsPassing = [];
+    let beginStationNameCurr = beginStation;
+    let endStationNameCurr = endStation;
+    let indexAfter = Number.POSITIVE_INFINITY;
+    // console.log(line, lineNr, beginStation, endStation);
+    for(let i = 0; i < activeMetroLine.length; i++){
+      if(activeMetroLine[i].metroHalte == beginStationNameCurr){
+        indexAfter = i;
+      }
+      if(i >= indexAfter){
+        stationsPassing.push(activeMetroLine[i]);
+        if(activeMetroLine[i].metroHalte == endStationNameCurr){
+          break;
+        }
+      }
+    }
+    let firstWay = false;
+    stationsPassing.forEach(function(station){
+      if(station.metroHalte == endStationNameCurr){
+        firstWay = true;
+      }
+    });
+    if(!firstWay){
+      stationsPassing = [];
+      indexAfter = Number.NEGATIVE_INFINITY;
+      for(let i = activeMetroLine.length; i > 0; i--){
+        if(activeMetroLine[i - 1].metroHalte == beginStationNameCurr){
+          indexAfter = i;
+        }
+        if(i <= indexAfter){
+          stationsPassing.push(activeMetroLine[i - 1]);
+          if(activeMetroLine[i - 1].metroHalte == endStationNameCurr){
+            break;
+          }
+        }
+      }
+    }
+    let directRouteObj = {
+      line: lineNr,
+      obj: stationsPassing
+    };
+    return directRouteObj;
+  },
+  beginStationName: '',
+  endStationName: '',
+}
