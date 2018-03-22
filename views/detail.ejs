@@ -1,35 +1,37 @@
 <% include head.ejs %>
-<section class="eindResults">
-  <div>
-    <h1>Routeplanner metro Amsterdam</h1>
-    <% if(route.length > 1){ %>
-    <h3>Route van <span><%= route[0].firstLi %></span> naar <span><%= route[1].lastLi %></span></h3>
-    <% } else { %>
-      <h3>Route van <span><%= route[0].firstLi %></span> naar <span><%= route[0].lastLi %></span></h3>
-    <% } %>
-    <% for(var i = 0; i < route.length; i++) {%>
-      <div class="singleResult">
-        <div class="result_container">
-          <h4>Metro <span><%= route[i].line %></span></h4>
-          <ul class="stops">
-            <li>
-              <%= route[i].firstLi %>
-            </li>
-            <% if(route[i].betweenStops.length > 0){ %>
-              <div class="stops_between">
-                <% for(var l = 0; l < route[i].betweenStops.length; l++) {%>
-                  <li>
-                    <%= route[i].betweenStops[l] %>
-                  </li>
-                <% } %>
-              </div>
-            <% } %>
+<main>
+  <section class="eindResult">
+    <div>
+      <h1>Routeplanner metro Amsterdam</h1>
+      <% if(route.length > 1){ %>
+      <h3>Route van <span><%= route[0].firstLi %></span> naar <span><%= route[1].lastLi %></span></h3>
+      <% } else { %>
+        <h3>Route van <span><%= route[0].firstLi %></span> naar <span><%= route[0].lastLi %></span></h3>
+      <% } %>
+      <% for(var i = 0; i < route.length; i++) {%>
+        <div class="singleResult">
+          <div class="result_container">
+            <h4>Metro <span><%= route[i].line %></span></h4>
+            <ol class="stops">
               <li>
-                <%= route[i].lastLi %>
+                <%= route[i].firstLi %>
               </li>
-          </ul>
+              <% if(route[i].betweenStops.length > 0){ %>
+                <ol class="stops_between">
+                  <% for(var l = 0; l < route[i].betweenStops.length; l++) {%>
+                    <li>
+                      <%= route[i].betweenStops[l] %>
+                    </li>
+                  <% } %>
+                </ol>
+              <% } %>
+                <li>
+                  <%= route[i].lastLi %>
+                </li>
+            </ol>
+          </div>
         </div>
-      </div>
-    <% } %>
-  </div>
-</section>
+      <% } %>
+    </div>
+  </section>
+</main>

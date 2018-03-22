@@ -1,10 +1,18 @@
 <% include head.ejs %>
-
-<h1>Movies</h1>
-<form action="/result" method="post">
-  <input name="startAdress" type="text" id="start"/>
-  <label for="start">Testen</label>
-  <input name="endAdress" type="text" id="end"/>
-  <label for="end">Testen</label>
-  <input type="submit" value="Send">
-</form>
+<main>
+  <section class="planner">
+    <h1>Routeplanner metro Amsterdam</h1>
+    <p>Plan hier je route met de nieuwe metrolijn <span>(beschikbaar vanaf 22 juli)</span></p>
+    <form action="/result" method="post" autocomplete="off">
+      <div class="inputField">
+        <input required placeholder="Begin"name="startAdress" type="text" id="start"/>
+        <label for="start">Begin (voer een adres, station of postcode in)</label>
+      </div>
+      <div class="inputField">
+        <input required placeholder="endAddres" name="endAdress" type="text" id="end"/>
+        <label for="end">Eind (voer een adres, station of postcode in)</label>
+      </div>
+      <input type="submit" value="Plan je route">
+    </form>
+  </section>
+</main>
