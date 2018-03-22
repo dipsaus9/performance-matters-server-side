@@ -8,11 +8,15 @@ The routeplanner uses the Google location API. You can enter the apikey in the a
 
 This project uses npm packages. To use this project run:
 
-`npm install`
+```
+npm install
+```
 
 and
 
-`node app.js`
+```
+node app.js
+```
 
 This process will start a server on port `1337`.
 The app.js file will serve a server using the express module.
