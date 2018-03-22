@@ -5,14 +5,19 @@
     <p>Plan hier je route met de nieuwe metrolijn <span>(beschikbaar vanaf 22 juli)</span></p>
     <form action="/result" method="post" autocomplete="off">
       <div class="inputField">
-        <input required placeholder="Begin"name="startAdress" type="text" id="start"/>
-        <label for="start">Begin (voer een adres, station of postcode in)</label>
+        <input required placeholder="Begin"name="startAdress" type="text" class="start" id="beginAddres"/>
+        <label for="beginAddres">Begin (voer een adres, station of postcode in)</label>
+        <div class="results start">
+        </div>
       </div>
       <div class="inputField">
-        <input required placeholder="endAddres" name="endAdress" type="text" id="end"/>
-        <label for="end">Eind (voer een adres, station of postcode in)</label>
+        <input required placeholder="endAddres" name="endAdress" type="text" class="end" id="endAddres"/>
+        <label for="endAddres">Eind (voer een adres, station of postcode in)</label>
+        <div class="results end">
+        </div>
       </div>
       <input type="submit" value="Plan je route">
     </form>
   </section>
 </main>
+<% include footer.ejs %>

@@ -16,23 +16,26 @@ app.set('view engine', 'ejs');;
 app.set('views', 'views');
 
 app.get('/', function (req, res) {
-  metroData.init();
   res.render('index.ejs', {start: ''});
 });
 app.post('/result', function(req, res){
-  let inputData = (req.body);
-  if(inputData.startAdress != '' && inputData.endAdress != ''){
-    let firstAdress = inputData.startAdress.split(' ').join('+') + ', Nederland';
-    let secondAdress = inputData.endAdress.split(' ').join('+') + ', Nederland';
-    let firstAdressOutcome = getData(firstAdress);
-    let endAdressOutcome = getData(secondAdress);
-    Promise.all([firstAdressOutcome, endAdressOutcome]).then(function(data) {
-      firstAdressResult = (JSON.parse(data[0])).results[0].geometry;
-      secondAdressResult = (JSON.parse(data[1])).results[0].geometry;
-      let test = routePlanner.init(firstAdressResult, secondAdressResult);
-      res.render('detail.ejs', {route: test});
-    });
-  }
+  metroData.init(function(isReady) {
+    if (isReady) {
+      let inputData = (req.body);
+      if(inputData.startAdress != '' && inputData.endAdress != ''){
+        let firstAdress = inputData.startAdress.split(' ').join('+') + ', Nederland';
+        let secondAdress = inputData.endAdress.split(' ').join('+') + ', Nederland';
+        let firstAdressOutcome = getData(firstAdress);
+        let endAdressOutcome = getData(secondAdress);
+        Promise.all([firstAdressOutcome, endAdressOutcome]).then(function(data) {
+          firstAdressResult = (data[0]).results[0].geometry;
+          secondAdressResult = (data[1]).results[0].geometry;
+          let test = routePlanner.init(firstAdressResult, secondAdressResult);
+          res.render('detail.ejs', {route: test});
+        });
+      }
+    }
+  });
 });
 
 app.use(function(req, res, next){
@@ -51,7 +54,7 @@ function getData(url){
   return new Promise(function(resolve, reject) {
     request((googleHost + url + apiKeyGoogle), function (error, response, body) {
       if (error) return reject(error);
-      resolve(body);
+      resolve(JSON.parse(body));
     });
   });
 }

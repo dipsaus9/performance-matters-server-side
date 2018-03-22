@@ -11,8 +11,8 @@ SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en".
 FILTER(?lijn IN ( wd:Q2466115, wd:Q2163442, wd:Q606629, wd:Q2183200, wd:Q2466111))
 }`;
 const metroData = {
-  init: function(){
-    this.getData().then(metroData.mapData.init);
+  init: function(callback){
+    this.getData().then(metroData.mapData.init).then(callback(true));
   },
   getData: function(){
     const endpointUrl = 'https://query.wikidata.org/sparql';
@@ -27,6 +27,7 @@ const metroData = {
       const allLines = self.createLineObject(allMetroStations);
       metroData.metroLines = allLines;
       metroData.metroStations = allMetroStations;
+      return true;
     },
     createGEOJSON: function(data){
       let newData = data.results.bindings.map(function(el){
