@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var request = require('request');
 var app = express();
 var session = require('express-session');
+const compression = require('compression');
 
 let googleHost = 'https://maps.googleapis.com/maps/api/geocode/json?address=';
 
@@ -23,8 +24,9 @@ app.use(session({
   resave: false,
   saveUninitialized: true,
   cookie: { secure: false }
-}))
+}));
 
+app.use(compression());
 
 app.get('/', function (req, res) {
   metroData.init();

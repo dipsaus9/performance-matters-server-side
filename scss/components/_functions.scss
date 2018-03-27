@@ -282,6 +282,7 @@ $base-fontpath: "../fonts";
 			url("#{$base-fontpath}/#{$file}.svg##{$name}") format('svg'); /* Legacy iOS */
 		font-weight: $weight;
 		font-style: $type;
+    font-display: swap; 
 	}
 }
 
