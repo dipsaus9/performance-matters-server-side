@@ -1,0 +1,19 @@
+{
+  "name": "Routeplanner subway Amsterdam",
+  "short_name": "Routeplanner",
+  "description": null,
+  "dir": "auto",
+  "lang": "en-US",
+  "display": "standalone",
+  "orientation": "portrait",
+  "start_url": "/",
+  "background_color": "#FFFFFF",
+  "theme_color": "#eeeeee",
+  "icons": [
+    {
+      "src": "/public/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

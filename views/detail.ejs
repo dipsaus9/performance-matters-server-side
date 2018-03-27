@@ -36,4 +36,11 @@
     <a href="/">Plan opnieuw</a>
   </section>
 </main>
+<!-- <script>
+  var local = <%- JSON.stringify(route[0]) %>;
+  var start = local.firstLi.split(' ').join('_');
+  var end = local.lastLi.split(' ').join('_');
+  var key = start + '-to-' + end;
+  localStorage.setItem(key, JSON.stringify(local));
+</script> -->
 <% include footer.ejs %>

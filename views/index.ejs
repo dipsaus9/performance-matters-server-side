@@ -18,6 +18,16 @@
       </div>
       <input type="submit" value="Plan je route">
     </form>
+    <% if(session.data){ %>
+      <div class="previousResults">
+        <% for(var i = 0; i < session.data.length; i++) {%>
+          <a href="/result/<%= session.data[i].url %>">
+            <%= session.data[i].data[0].firstLi %> naar <%= session.data[i].data[session.data[i].data.length - 1].lastLi %>
+          </a>
+        <% } %>
+      </div>
+    <% } %>
+
   </section>
 </main>
 <% include footer.ejs %>
