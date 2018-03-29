@@ -41,18 +41,14 @@ I tested this project on multiple ways to increase the performance of the page. 
 
 ### Performance before testing
 Performance of the audit:
-| Performance   | Progressive Web App | Accesibilty | Best Practices | SEO  |  
-| ------------- | ------------------- | ----------- | -------------- | ---- |
-| 79            | 45                  | 100         | 94             | 89   |
-
-Performance of the first view:
-| Load  | DomContentLoaded | Finish | First View |
-| ----- | ---------------- | ------ | ---------- |
-| 772,s | 264ms            | 757ms  | 310ms      |
-
 | Performance | Progressive Web App | Accesibilty | Best Practices | SEO |
 | ------------- |:-------------:| -----:| :-------------:| -----:|
 | 79      | 45 | 100 | 100      | 94 | 89 |
+
+Performance of the first view:
+| Load | DomContentLoaded | Finish | First View |
+| ------------- |:-------------:| -----:| :-------------:|
+| 772ms      | 264ms | 757ms | 310ms      |
 
 ### Gzipping all files
 By using a npm module called `compression` I created a Gzip of all my files. This increases the performance a little bit but it wasn't noticable.
