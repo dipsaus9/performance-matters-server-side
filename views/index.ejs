@@ -5,7 +5,7 @@
     <p>Plan hier je route met de nieuwe metrolijn <span>(beschikbaar vanaf 22 juli)</span></p>
     <form action="/result" method="post" autocomplete="off">
       <div class="inputField">
-        <input required placeholder="Begin"name="startAdress" type="text" class="start" id="beginAddres"/>
+        <input autofocus required placeholder="Begin"name="startAdress" type="text" class="start" id="beginAddres"/>
         <label for="beginAddres">Begin (voer een adres, station of postcode in)</label>
         <div class="results start">
         </div>
@@ -20,11 +20,16 @@
     </form>
     <% if(session.data){ %>
       <div class="previousResults">
-        <% for(var i = 0; i < session.data.length; i++) {%>
-          <a href="/result/<%= session.data[i].url %>">
-            <%= session.data[i].data[0].firstLi %> naar <%= session.data[i].data[session.data[i].data.length - 1].lastLi %>
-          </a>
-        <% } %>
+        <h2>Vorige routes</h2>
+        <ul>
+          <% for(var i = 0; i < session.data.length; i++) {%>
+            <li>
+              <a href="/result/<%= session.data[i].url %>">
+                <%= session.data[i].data[0].firstLi %> naar <%= session.data[i].data[session.data[i].data.length - 1].lastLi %>
+              </a>
+            </li>
+          <% } %>
+        </ul>
       </div>
     <% } %>
 
