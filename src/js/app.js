@@ -1,3 +1,5 @@
+var test = require('./routePlanner/apiKeyGoogle.js');
+
 const googleLocation = {
   load: function (){
     var timeout = null;

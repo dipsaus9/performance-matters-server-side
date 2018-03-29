@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-css": "node-sass scss/app.scss public/css/main.css",
     "watch-css": "nodemon -e scss -x \"npm run build-css\"",
-    "browserify": "browserify src/js/app.js > public/js/app.js"
+    "browserify": "browserify bundle.js > public/js/app.js"
   },
   "author": "",
   "license": "ISC",
