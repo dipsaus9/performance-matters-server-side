@@ -26,7 +26,7 @@ app.use(session({
   cookie: { secure: false }
 }));
 
-// app.use(compression());
+app.use(compression());
 
 app.get('/', function (req, res) {
   metroData.init();

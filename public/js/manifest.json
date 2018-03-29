@@ -1,9 +1,9 @@
 {
   "name": "Routeplanner subway Amsterdam",
   "short_name": "Routeplanner",
-  "description": null,
+  "description": "Plan your route in Amsterdam by filling in the input fields",
   "dir": "auto",
-  "lang": "en-US",
+  "lang": "nl",
   "display": "standalone",
   "orientation": "portrait",
   "start_url": "/",
@@ -11,8 +11,33 @@
   "theme_color": "#eeeeee",
   "icons": [
     {
-      "src": "/public/img/apple-touch-icon.png",
-      "sizes": "180x180",
+      "src": "/img/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-152x152.png",
+      "sizes": "168x168",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/img/icon-512x512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
