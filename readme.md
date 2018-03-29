@@ -22,11 +22,36 @@ This process will start a server on port `1337`.
 The app.js file will serve a server using the express module.
 
 ## To Do
-* Progressive enhancement with Javascript
-* Browserify
+- [x] Progressive enhancement with Javascript
+- [x] Browserify
+- [x] Serviceworker
+- [ ] Google maps
 
 ## Project
 This project is searching between all subway stations in Amsterdam. It compares all stations and their lines to create a route. This will be then transported to a ejs file (views folder). The server will serve all files from the index.ejs. Alls results will come in the detail.ejs file.
+
+## Performance
+I tested this project on multiple ways to increase the performance of the page. I tested and used the following principles in order. I tested this by doing a audit (chrome) and checking the first view and load time by throttling the network to 2G. I tried all tests at least 5 times and I took the average numbers. I also tested this on all page but I´ll descirbe just the homepage now.
+
+1. #Serviceworker
+2. #Gzipping all files
+3. #CSS minfiy
+4. #Load CSS async
+5. #Font display
+
+### Performance before testing
+Performance of the audit:
+| Performance  | Progressive Web App | Accesibilty | Best Practices | SEO |  
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| 79 | 45 | 100 | 94 | 89 |
+
+Performance of the first view:
+| Load  | DomContentLoaded | Finish | First View |
+| ------------- | ------------- | ------------- | ------------- |
+| 772,s | 264ms | 757ms | 310ms |
+
+### Gzipping all files
+By using a npm module called `compression` I created a Gzip of all my files. This increases the performance a little bit but it wasn't noticable.
 
 ## License
 MIT © Dipsaus9
