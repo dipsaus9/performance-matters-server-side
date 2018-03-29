@@ -34,10 +34,10 @@ This project is searching between all subway stations in Amsterdam. It compares 
 ## Performance
 I tested this project on multiple ways to increase the performance of the page. I tested and used the following principles in order. I tested this by doing a audit (chrome) and checking the first view and load time by throttling the network to 2G. I tried all tests at least 5 times and I took the average numbers. I also tested this on all page but I´ll descirbe just the homepage now.
 
-1. #Gzipping all files
-2. #Serviceworker
-3. #Load CSS async
-4. #Font display
+1. [#Gzipping all files](#Gzipping all files)
+2. [#Serviceworker](#Serviceworker)
+3. [#Load CSS async](#Load CSS async)
+4. [#Font display](#Font display)
 
 
 ### Performance before testing
