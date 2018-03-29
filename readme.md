@@ -40,7 +40,7 @@ I tested this project on multiple ways to increase the performance of the page. 
 4. Font display
 
 
-### Performance before testing
+Performance before testing
 #### Audit Test
 | Performance | Progressive Web App | Accesibilty | Best Practices | SEO |
 | ------------- |:-------------:| -----:| :-------------:| -----:|
@@ -51,7 +51,7 @@ I tested this project on multiple ways to increase the performance of the page. 
 | ------------- |:-------------:| -----:| :-------------:|
 | 772ms      | 264ms | 757ms | 310ms      |
 
-### Gzipping all files
+## Gzipping all files
 By using a npm module called `compression` I created a Gzip of all my files. This increases the performance a little bit but it wasn't noticable.
 #### Audit Test
 | Performance | Progressive Web App | Accesibilty | Best Practices | SEO |
@@ -65,7 +65,7 @@ By using a npm module called `compression` I created a Gzip of all my files. Thi
 
 These numbers are almost equal, so There wasn't a real differnece here.
 
-### service worker
+## service worker
 By using a service worker that saves all pages where the user has already been to, I increased the page. These statistics are on the second load of the page (it needs to be saved into the service worker first).
 
 #### Audit Test
@@ -81,7 +81,7 @@ By using a service worker that saves all pages where the user has already been t
 There is a huge differnce on the load time here. This is because a service worker can serve my files a lot faster here. In the background it will fetch all the files so the finish time is a bit longer here, but he user won't notice this.
 I also got a meeage on my best Practices I didn't load all of my content over HTTP2. Thats because the service worker has a different http setting. Thats because I'm on local host right now and I could solve this problem on my server.
 
-### Load CSS async
+## Load CSS async
 By loading CSS async (if supported) you can load more file at once. This should increase the first view.
 I used this code to create this:
 
@@ -102,7 +102,7 @@ I used this code to create this:
 
 Here we can see an increase in the performance and in the loading time aswell.
 
-### Font display
+## Font display
 By using `font-display: swap` we tell the browser to always use the browser font, and when the custom font is being loaded use that font. This results in a really fast first view.
 
 #### Audit Test
@@ -116,7 +116,7 @@ By using `font-display: swap` we tell the browser to always use the browser font
 | 340ms      | 245ms | 1.87ms | 290ms      |
 
 
-### Last percentage
+## Last percentage
 To really optimalize the app I added some small adjustments that increased the perfomance and speed of the page. I won't describe them in detail.
 
 * Minify CSS
