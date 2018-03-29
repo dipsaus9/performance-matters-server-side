@@ -40,11 +40,12 @@ I tested this project on multiple ways to increase the performance of the page. 
 5. #Font display
 
 ### Performance before testing
+#### Audit Test
 | Performance | Progressive Web App | Accesibilty | Best Practices | SEO |
 | ------------- |:-------------:| -----:| :-------------:| -----:|
 | 79      | 45 | 100 | 100      | 94 | 89 |
 
-Performance of the first view
+#### Network Throttling
 | Load | DomContentLoaded | Finish | First View |
 | ------------- |:-------------:| -----:| :-------------:|
 | 772ms      | 264ms | 757ms | 310ms      |
